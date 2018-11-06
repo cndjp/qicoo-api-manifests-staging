@@ -70,7 +70,6 @@ kind: Secret
 metadata:
   annotations:
     note: staging
-  creationTimestamp: null
   labels:
     variant: staging
   name: qicoo-mysql-secret-2kg2hc7t24
@@ -298,6 +297,10 @@ spec:
       - configMap:
           name: qicoo-mysql-configmap
         name: qicoo-mysql-configmap
+  volumeClaimTemplates:
+    metadata:
+      labels:
+        variant: staging
 ---
 apiVersion: batch/v1
 kind: Job
