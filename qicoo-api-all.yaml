@@ -23,7 +23,7 @@ metadata:
   name: qicoo-api-staging
   namespace: staging
 spec:
-  replicas: 2
+  replicas: 1
   strategy:
     rollingUpdate:
       maxSurge: 1
