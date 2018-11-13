@@ -1,29 +1,34 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: qicoo-api-staging
-  namespace: staging
   annotations:
     external-dns.alpha.kubernetes.io/hostname: api-s.qicoo.tokyo
-    service.beta.kubernetes.io/aws-load-balancer-ssl-cert: arn:aws:acm:us-west-2:297295734308:certificate/8a2b8c2c-7753-4ce0-8215-32ffb7711c58
     service.beta.kubernetes.io/aws-load-balancer-backend-protocol: http
+    service.beta.kubernetes.io/aws-load-balancer-ssl-cert: arn:aws:acm:us-west-2:297295734308:certificate/8a2b8c2c-7753-4ce0-8215-32ffb7711c58
     service.beta.kubernetes.io/aws-load-balancer-ssl-ports: "443"
-spec:
-  type: LoadBalancer
-  ports:
-  - port: 443
-    name: http
-    targetPort: 8080
-  selector:
-    app: qicoo-api-staging
----
-apiVersion: extensions/v1beta1
-kind: Deployment
-metadata:
-  name: qicoo-api-staging
+  labels:
+    app: qicoo-api
+  name: qicoo-api
   namespace: staging
 spec:
-  replicas: 1
+  ports:
+  - name: http
+    port: 443
+    targetPort: 8080
+  selector:
+    app: qicoo-api
+  type: LoadBalancer
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: qicoo-api
+  namespace: staging
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: qicoo-api
   strategy:
     rollingUpdate:
       maxSurge: 1
@@ -32,44 +37,44 @@ spec:
   template:
     metadata:
       labels:
-        app: qicoo-api-staging
+        app: qicoo-api
     spec:
       containers:
-      - image: cndjp/qicoo-api:sugitest_0.0.7
-        name: qicoo-api-staging
+      - envFrom:
+        - secretRef:
+            name: qicoo-api-secret-staging
+        image: cndjp/qicoo-api:sugitest_0.0.8
+        livenessProbe:
+          failureThreshold: 2
+          httpGet:
+            path: /readiness
+            port: 8080
+            scheme: HTTP
+          initialDelaySeconds: 20
+          periodSeconds: 30
+          successThreshold: 1
+          timeoutSeconds: 1
+        name: qicoo-api
         ports:
         - containerPort: 8080
           name: http
-        livenessProbe:
-          httpGet:
-            scheme: HTTP
-            path: /readiness
-            port: 8080
-          initialDelaySeconds: 20
-          periodSeconds: 30
-          timeoutSeconds: 1
-          successThreshold: 1
-          failureThreshold: 2
         readinessProbe:
+          failureThreshold: 2
           httpGet:
-            scheme: HTTP
             path: /readiness
             port: 8080
+            scheme: HTTP
           initialDelaySeconds: 20
           periodSeconds: 30
-          timeoutSeconds: 1
           successThreshold: 2
-          failureThreshold: 2
+          timeoutSeconds: 1
         resources:
-          requests:
-            memory: 1024Mi
-            cpu: 100m
           limits:
+            cpu: 200m
             memory: 1024Mi
-            cpu: 100m
-        envFrom:
-        - secretRef:
-            name: qicoo-api-secret-staging
+          requests:
+            cpu: 200m
+            memory: 1024Mi
         securityContext:
           privileged: false
           readOnlyRootFilesystem: true
