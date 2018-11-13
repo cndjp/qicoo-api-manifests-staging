@@ -43,7 +43,7 @@ spec:
       - envFrom:
         - secretRef:
             name: qicoo-api-secret-staging
-        image: cndjp/qicoo-api:sugitest_0.0.8
+        image: cndjp/qicoo-api:v0.0.1-20181111-0000
         livenessProbe:
           failureThreshold: 2
           httpGet:
@@ -70,10 +70,10 @@ spec:
           timeoutSeconds: 1
         resources:
           limits:
-            cpu: 200m
+            cpu: 1000m
             memory: 1024Mi
           requests:
-            cpu: 200m
+            cpu: 1000m
             memory: 1024Mi
         securityContext:
           privileged: false
