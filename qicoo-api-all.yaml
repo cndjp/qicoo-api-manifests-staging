@@ -45,7 +45,7 @@ spec:
             name: qicoo-api-secret-staging
         - configMapRef:
             name: qicoo-api-configmap-staging
-        image: cndjp/qicoo-api:v0.0.1-20181202-0505
+        image: cndjp/qicoo-api:v0.0.1-20181202-0524
         livenessProbe:
           failureThreshold: 2
           httpGet:
